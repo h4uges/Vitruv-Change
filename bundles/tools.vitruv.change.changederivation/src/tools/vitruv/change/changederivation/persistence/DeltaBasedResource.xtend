@@ -15,6 +15,7 @@ import tools.vitruv.change.composite.description.VitruviusChangeFactory
 import tools.vitruv.change.composite.description.VitruviusChangeResolver
 
 import static edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceSetUtil.withGlobalFactories
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl
 
 /**
  * This class provides functionality to save and load a resource in a model delta representation.
@@ -27,11 +28,13 @@ class DeltaBasedResource extends ResourceImpl {
 	new(URI uri) {
 		super(uri)
 	}
-
-	private static def List<EChange<HierarchicalId>> loadDeltas(URI modelUri) {
-		val resourceSet = withGlobalFactories(new ResourceSetImpl());
-		val resource = resourceSet.getResource(modelUri, true);
-		return resource.getContents().map[it as EChange<HierarchicalId>].toList
+	
+	private static def List<EChange> loadDeltas(URI modelUri) {
+        val resourceSet = new ResourceSetImpl();
+		resourceSet.resourceFactoryRegistry.extensionToFactoryMap += "*" -> new XMIResourceFactoryImpl()
+		
+        val resource = resourceSet.getResource(modelUri, true);
+        return resource.getContents().map[it as EChange<HierarchicalId>].toList
 	}
 
 	override doLoad(InputStream inputStream, Map<?, ?> options) throws IOException {
